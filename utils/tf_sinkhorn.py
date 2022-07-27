@@ -809,7 +809,7 @@ class sinkhorn_knopp_tf_scaling_stabilized_class():
         G = self.sink_fn(a, b, G, sparse=False)
 
        
-        for cpt in tf.range(1,self.numIter):
+        for cpt in range(1,self.numIter):
 
             next_reg = self.reg * self.reg_step
             G = tf.pow(G,self.reg/next_reg)

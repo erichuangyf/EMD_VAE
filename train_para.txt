@@ -1,0 +1,1 @@
+python3 Train_B_anneal.py /global/home/users/yifengh3/VAE/vec_data/vec_model_1 --data_path /global/home/users/yifengh3/VAE/vec_data --exponent 2
