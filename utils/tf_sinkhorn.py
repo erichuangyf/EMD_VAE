@@ -436,7 +436,7 @@ class sinkhorn_knopp_tf_stabilized_class():
         uprev = u_init
         vprev = v_init
 
-        for cpt in tf.range(self.numItermax):
+        for cpt in range(self.numItermax):
 
             # self.cpt.assign(cpt)
 

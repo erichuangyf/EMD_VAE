@@ -108,12 +108,12 @@ class betaVAEModel(keras.Model):
         _,logbeta = data
         z_mean, z_log_var, z = self.encoder(data, training=False)
         return self.decoder([z_mean, logbeta])
-
-
+    
     @tf.function
     def heat_capacity_D(self,data,nsamples=1):
         xpair, y = data
         x, logbeta = xpair
+        y = tf.cast(y, dtype='float32')
         beta = tf.exp(logbeta*np.log(10.))
         y_pred ,z_mean, z_log_var, z = self([tf.tile(x,[nsamples,1,1]), tf.math.log(tf.tile(beta,[nsamples]))/np.log(10.)], training=False)  # Forward pass
         recon_loss = self.recon_loss(tf.tile(y,[nsamples,1,1]), y_pred)/nsamples

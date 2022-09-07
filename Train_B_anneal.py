@@ -225,7 +225,7 @@ callbacks=[tf.keras.callbacks.CSVLogger(train_output_dir + '/log.csv', separator
 logbeta_min = -6.
 logbeta_max = 1.
 
-beta_rs = np.concatenate((np.logspace(-5.,1.,13),
+logbetas = np.concatenate((np.logspace(-5.,1.,13),
                           np.logspace(1.,-1.,5)[1:],
                           np.logspace(-1.,1.,5)[1:],
                           np.logspace(1.,-1.,5)[1:],
