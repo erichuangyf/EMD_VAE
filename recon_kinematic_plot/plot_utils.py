@@ -122,7 +122,7 @@ def plot_missing_m(data_files, data_names, save_plot_dir=None, show_plot = True,
 
 
 
-def jet_clustering(ojs, ptmin, pbar = True, num_of_jets = 1):
+def jet_clustering(ojs, ptmin, pbar = True, num_of_jets = 1,  R=0.4):
 #     print("clustering jets with paramert ptmin={}".format(ptmin))
     njets = []
     pTleadjets = [[] for _ in range(num_of_jets)]
@@ -133,7 +133,7 @@ def jet_clustering(ojs, ptmin, pbar = True, num_of_jets = 1):
             pseudojets_input[i]['pT'] = ojs[k, i, 0]
             pseudojets_input[i]['eta'] = ojs[k, i, 1]
             pseudojets_input[i]['phi'] = ojs[k, i, 2]
-        sequence = cluster(pseudojets_input, R=0.4, p=-1)
+        sequence = cluster(pseudojets_input, R=R, p=-1)
         jets = sequence.inclusive_jets(ptmin=ptmin)  # 5 gev
         njets += [len(jets)]
         for n_jet in range(num_of_jets):
@@ -144,49 +144,88 @@ def jet_clustering(ojs, ptmin, pbar = True, num_of_jets = 1):
 
 
 
+# def _jet_clustering(ojs, ptmin, pbar = True):
+# #     print("clustering jets with paramert ptmin={}".format(ptmin))
+#     njets = []
+#     pTleadjet = []
+#     mleadjet = []
+#     for k in tqdm(range(len(ojs)), disable= not pbar):
+#         pseudojets_input = np.zeros(50, dtype=DTYPE_PTEPM)
+#         for i in range(50):
+#             pseudojets_input[i]['pT'] = ojs[k, i, 0]
+#             pseudojets_input[i]['eta'] = ojs[k, i, 1]
+#             pseudojets_input[i]['phi'] = ojs[k, i, 2]
+#         sequence = cluster(pseudojets_input, R=0.1, p=-1)
+#         jets = sequence.inclusive_jets(ptmin=ptmin)  # 5 gev
+#         njets += [len(jets)]
+#         if (len(jets) > 0):
+#             pTleadjet += [jets[0].pt]
+#             mleadjet += [jets[0].mass]
+#     return njets, pTleadjet, mleadjet
+
+
+def plot_njets(njets_summary, data_names, save_plot_dir, show_plot, dpi):
+    plt.figure(figsize=_figsize)
+    for i, njet in enumerate(njets_summary):
+        if i==0:
+            n,b,_= plt.hist(njet,label=data_names[i], alpha=0.5, histtype=_1st_hist_type, density=True, bins =20)
+        else:
+            n,b,_ = plt.hist(njet, label=data_names[i], bins=b, alpha=0.5, histtype=hist_type, density=True)
+    plt.xlabel("n jets")
+    plot_label = "n jets"
+    plt.xlim(0,20)
+    plt.ylim(0,0.5)
+    plt.legend()
+    if save_plot_dir:
+        plt.savefig(os.path.join(save_plot_dir,plot_label.replace(" ","_")+".png"), dpi=dpi)
+    if show_plot:
+        plt.show()
+    plt.close()
+    
+    
+def plt_pt_m_jet(pt_or_m_summary, data_names, save_plot_dir, show_plot, dpi, jet_num, mode):
+    plt.figure(figsize=_figsize)
+    
+    #check plot mode, 0 for pt jet, 1 for m jet
+    name = ["pT jet", "m jet"][mode] 
+    
+    for i, data in enumerate(pt_or_m_summary):
+        if i==0:
+            n,b,_= plt.hist(data,label=data_names[i], alpha=0.5, histtype=_1st_hist_type, density=True, bins =np.logspace(1,3.5,20))
+        else:
+            n,b,_ = plt.hist(data, label=data_names[i], bins=b, alpha=0.5, histtype=hist_type, density=True)
+    plot_label = name + " #{}".format(jet_num)
+    plt.xlabel(plot_label)
+    if mode==1:
+        plt.xlim(10,100)
+    plt.semilogx()
+    plt.yscale("log")
+    plt.legend()
+    if save_plot_dir:
+        plt.savefig(os.path.join(save_plot_dir,plot_label.replace(" ","_")+".png"), dpi=dpi)
+    if show_plot:
+        plt.show()
+    plt.close()
+
+
 def plot_clustering(data_files, data_names, save_plot_dir=None, show_plot = True, pbar=True, num_of_jets = 1, dpi = 200):
     _ptmin = 10
     _bins = None
-    clustering_list = []
+    njets_summary = []
+    pt_summary=[]
+    m_summary = []
     for df in data_files:
-        clustering_list.append(jet_clustering(df,_ptmin, pbar, num_of_jets=num_of_jets))
-    
-    for i in range(num_of_jets*2+1):
-        plt.figure(figsize=_figsize)
-        for index,name,df in zip(range(len(data_files)),data_names,clustering_list):
-            i1 = 1+ (i-1)%2
-            i2 = (i-1)//2
-            if index==0 and i!=0: 
-                n,b,_= plt.hist(df[i1][i2],label=name, alpha=0.5, histtype=_1st_hist_type, density=True, bins =np.logspace(1,3.5,20))
-            elif index==0 and i==0:
-                n,b,_= plt.hist(df[i],label=name, alpha=0.5, histtype=_1st_hist_type, density=True, bins =20, range=(0,20))
-            else:
-                plt.hist(df[i1][i2], label=name, bins=b, alpha=0.5, histtype=hist_type, density=True)
-        if i==0:
-            plt.xlabel("n jets")
-            plot_label = "n jets"
-            plt.xlim(0,20)
-            plt.ylim(0,0.5)
-        else:
-            jet_order = (i+1)//2
-            name_idx_order = (i+1)%2
-            name = ["pT jet", "m jet"][name_idx_order] + " #{}".format(jet_order)
-            plt.xlabel(name)
-            plot_label = name
-            if name_idx_order==1:
-                plt.xlim(min(df[i1][i2]),100)
-        if i!=0:
-            plt.semilogx()
-            plt.yscale("log")
-        plt.legend()
-        if save_plot_dir:
-            plt.savefig(os.path.join(save_plot_dir,plot_label.replace(" ","_")+".png"), dpi=dpi)
-        if show_plot:
-            plt.show()
-        plt.close()
-
-
-
+        njets, pTleadjets, mleadjets = jet_clustering(df,_ptmin, pbar, num_of_jets=num_of_jets)
+        njets_summary.append(njets)
+        pt_summary.append(pTleadjets)
+        m_summary.append(mleadjets)
+        
+    plot_njets(njets_summary, data_names, save_plot_dir, show_plot, dpi)
+    for jet_num in range(num_of_jets):
+        pts = [data[jet_num] for data in pt_summary]
+        ms = [data[jet_num] for data in m_summary]
+        plt_pt_m_jet(pts, data_names, save_plot_dir, show_plot, dpi, jet_num, 0)
+        plt_pt_m_jet(ms, data_names, save_plot_dir, show_plot, dpi, jet_num, 1)
     
 
 def plot_everything(data_files, data_names, save_plot_dir=None, show_plot = True, pbar = True, njets = 1, dpi =200):
