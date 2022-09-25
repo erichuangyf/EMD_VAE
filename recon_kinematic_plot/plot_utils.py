@@ -183,7 +183,7 @@ def plot_njets(njets_summary, data_names, save_plot_dir, show_plot, dpi):
     plt.close()
     
     
-def plt_pt_m_jet(pt_or_m_summary, data_names, save_plot_dir, show_plot, dpi, jet_num, mode):
+def plt_pt_m_jet(pt_or_m_summary, data_names, save_plot_dir, show_plot, dpi, jet_num, mode, mjet_xlim=None):
     plt.figure(figsize=_figsize)
     
     #check plot mode, 0 for pt jet, 1 for m jet
@@ -196,8 +196,8 @@ def plt_pt_m_jet(pt_or_m_summary, data_names, save_plot_dir, show_plot, dpi, jet
             n,b,_ = plt.hist(data, label=data_names[i], bins=b, alpha=0.5, histtype=hist_type, density=True)
     plot_label = name + " #{}".format(jet_num)
     plt.xlabel(plot_label)
-    if mode==1:
-        plt.xlim(10,100)
+    if mode==1 and not isinstance(mjet_xlim, type(None)):
+        plt.xlim(*mjet_xlim)
     plt.semilogx()
     plt.yscale("log")
     plt.legend()
@@ -208,7 +208,8 @@ def plt_pt_m_jet(pt_or_m_summary, data_names, save_plot_dir, show_plot, dpi, jet
     plt.close()
 
 
-def plot_clustering(data_files, data_names, save_plot_dir=None, show_plot = True, pbar=True, num_of_jets = 1, dpi = 200):
+def plot_clustering(data_files, data_names, save_plot_dir=None, show_plot = True, pbar=True, num_of_jets = 1, 
+                    dpi = 200, mjet_xlim = (10,100)):
     _ptmin = 10
     _bins = None
     njets_summary = []
@@ -225,16 +226,16 @@ def plot_clustering(data_files, data_names, save_plot_dir=None, show_plot = True
         pts = [data[jet_num] for data in pt_summary]
         ms = [data[jet_num] for data in m_summary]
         plt_pt_m_jet(pts, data_names, save_plot_dir, show_plot, dpi, jet_num, 0)
-        plt_pt_m_jet(ms, data_names, save_plot_dir, show_plot, dpi, jet_num, 1)
+        plt_pt_m_jet(ms, data_names, save_plot_dir, show_plot, dpi, jet_num, 1, mjet_xlim)
     
 
-def plot_everything(data_files, data_names, save_plot_dir=None, show_plot = True, pbar = True, njets = 1, dpi =200):
+def plot_everything(data_files, data_names, save_plot_dir=None, show_plot = True, pbar = True, njets = 1, dpi =200, mjet_xlim = (10,100)):
     plot_eta(data_files, data_names, save_plot_dir, show_plot, dpi)
     plot_phi(data_files, data_names, save_plot_dir, show_plot, dpi)
     plot_pt_frac(data_files, data_names, save_plot_dir, show_plot, dpi)
     plot_em(data_files, data_names, save_plot_dir, show_plot, pbar, dpi)
     plot_missing_m(data_files, data_names, save_plot_dir, show_plot, pbar, dpi)
-    plot_clustering(data_files, data_names, save_plot_dir, show_plot, pbar, num_of_jets=njets, dpi=dpi)
+    plot_clustering(data_files, data_names, save_plot_dir, show_plot, pbar, num_of_jets=njets, dpi=dpi, mjet_xlim=mjet_xlim)
     
     
 def plot_recon_jet(data, log_betas, plot_root_dir, dpi = 200):
@@ -248,7 +249,8 @@ def plot_recon_jet(data, log_betas, plot_root_dir, dpi = 200):
         
 
 def compare_recons(original_data,data, log_betas, plot_root_dir, 
-                   sub_dir_name="comparison", split=5, show_plot=True, njets=1, pbar = False, dpi = 200):
+                   sub_dir_name="comparison", split=5, show_plot=True, njets=1, pbar = False, dpi = 200,
+                  mjet_xlim = (10,100)):
     step = data.shape[0]//split
     split_index = list(range(0,data.shape[0], step))
     sub_sample = data[split_index]
@@ -262,4 +264,4 @@ def compare_recons(original_data,data, log_betas, plot_root_dir,
     except:
         pass
     
-    plot_everything(plot_entries, plot_name , save_plot_dir = save_dir, show_plot=show_plot, pbar=pbar, njets=njets, dpi=dpi)
+    plot_everything(plot_entries, plot_name , save_plot_dir = save_dir, show_plot=show_plot, pbar=pbar, njets=njets, dpi=dpi, mjet_xlim=mjet_xlim)
