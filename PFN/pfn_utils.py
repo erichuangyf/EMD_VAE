@@ -24,7 +24,7 @@ import os
 # configs
 train, val, test = 0.6, 0.3, 0.1
 Phi_sizes, F_sizes = (256, 256, 256), (256, 256, 256)
-num_epoch = 500
+num_epoch = 200
 batch_size = 1000
 muon_feature_number = 6
 
@@ -107,7 +107,7 @@ def train_pfn(signal_1, signal_2):
                                 factor=0.1**(1/5), patience=5, min_lr=1e-5,
                                                     verbose=1)
 
-    early_stop = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=20, 
+    early_stop = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=10, 
                                                 verbose=1)
 
     callbacks = [reduce_lr,early_stop]
@@ -234,7 +234,7 @@ def train_pfn_with_muon(signal_1, signal_2, signal_1_muon, signal_2_muon):
                                 factor=0.1**(1/5), patience=5, min_lr=1e-5,
                                                     verbose=1)
 
-    early_stop = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=20, 
+    early_stop = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=10, 
                                                 verbose=1)
 
     callbacks = [reduce_lr,early_stop]

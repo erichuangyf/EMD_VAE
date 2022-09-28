@@ -64,6 +64,7 @@ from utils.VAE_model_tools_param import build_and_compile_annealing_vae, betaVAE
 fn =  '/global/home/users/yifengh3/VAE/vec_data/B_background.h5'
 vae_args_file = "/global/home/users/yifengh3/VAE/vec_data/vec_model_no_anneal/vae_args.dat"
 model_dir = "/global/home/users/yifengh3/VAE/vec_data/vec_model_no_anneal"
+image_dir="study_plot_no_anneal"
 numbatches = 1000
 
 df = pandas.read_hdf(fn,stop=1000000)
@@ -149,7 +150,8 @@ for i in tqdm(range(numbatches)):
     i = i %(valid_x.shape[0]//batchsize)
     x = valid_x[i*batchsize:(i+1)*batchsize]
     y = valid_y[i*batchsize:(i+1)*batchsize]
-    result_D += np.array([np.mean(vae.heat_capacity_D([[x,np.ones(len(x))*logbeta],y],nsamples=nsamples)) for logbeta in logbetas])/ numbatches
+    result_D += np.array([np.mean(vae.heat_capacity_D([[x,np.ones(len(x))*logbeta],y],nsamples=nsamples)) for logbeta in logbetas])
+result_D/= numbatches
 
 
 # In[12]:
@@ -158,7 +160,7 @@ for i in tqdm(range(numbatches)):
 plt.figure(figsize=(10,10))
 plt.plot(np.power(10,logbetas),result_D)
 plt.semilogx()
-plt.savefig(os.path.join(model_dir, "result_d.png"))
+plt.savefig(os.path.join(image_dir, "result_d.png"))
 # plt.ylim([0,100])
 plt.show()
 
@@ -174,7 +176,8 @@ for i in tqdm(range(numbatches)):
     i = i %(valid_x.shape[0]//batchsize)
     x = valid_x[i*batchsize:(i+1)*batchsize]
     y = valid_y[i*batchsize:(i+1)*batchsize]
-    result_K += np.array([np.mean(vae.heat_capacity_KL([[x,np.ones(len(x))*logbeta],y])) for logbeta in logbetas])/ numbatches
+    result_K += np.array([np.mean(vae.heat_capacity_KL([[x,np.ones(len(x))*logbeta],y])) for logbeta in logbetas])
+result_K /= numbatches
 
 
 # In[ ]:
@@ -183,7 +186,7 @@ for i in tqdm(range(numbatches)):
 plt.figure(figsize=(10,10))
 plt.plot(np.power(10,logbetas),result_K)
 plt.semilogx()
-plt.savefig(os.path.join(model_dir, "result_k.png"))
+plt.savefig(os.path.join(image_dir, "result_k.png"))
 plt.show()
 
 
@@ -204,7 +207,8 @@ for i in tqdm(range(numbatches)):
     i = i %(valid_x.shape[0]//batchsize)
     x = valid_x[i*batchsize:(i+1)*batchsize]
     y = valid_y[i*batchsize:(i+1)*batchsize]
-    recon_loss += np.array([np.mean(vae.recon_loss(y.astype("float32"), vae([x,np.ones(len(x))*logbeta], training=False)[0])) for logbeta in logbetas]) / numbatches
+    recon_loss += np.array([np.mean(vae.recon_loss(y.astype("float32"), vae([x,np.ones(len(x))*logbeta], training=False)[0])) for logbeta in logbetas]) 
+recon_loss/= numbatches
 
 
 # In[ ]:
@@ -213,7 +217,7 @@ for i in tqdm(range(numbatches)):
 plt.figure(figsize=(10,10))
 plt.plot(np.power(10,logbetas),recon_loss)
 plt.semilogx()
-plt.savefig(os.path.join(model_dir, "recon_loss.png"))
+plt.savefig(os.path.join(image_dir, "recon_loss.png"))
 plt.show()
 
 
@@ -228,7 +232,8 @@ for i in tqdm(range(numbatches)):
     i = i %(valid_x.shape[0]//batchsize)
     x = valid_x[i*batchsize:(i+1)*batchsize]
     y = valid_y[i*batchsize:(i+1)*batchsize]
-    kl_loss += np.array([np.mean(vae.KL_loss(*vae([x,np.ones(len(x))*logbeta], training=False)[1:3])) for logbeta in logbetas]) / numbatches
+    kl_loss += np.array([np.mean(vae.KL_loss(*vae([x,np.ones(len(x))*logbeta], training=False)[1:3])) for logbeta in logbetas]) 
+kl_loss /= numbatches
 
 
 # In[ ]:
@@ -237,13 +242,12 @@ for i in tqdm(range(numbatches)):
 plt.figure(figsize=(10,10))
 plt.plot(np.power(10,logbetas),kl_loss)
 plt.semilogx()
-plt.savefig(os.path.join(model_dir, "kl_loss.png"))
+plt.savefig(os.path.join(image_dir, "kl_loss.png"))
 plt.show()
 
 individule_kl_loss = np.zeros([len(logbetas),256])
 batchsize = 1000
 nsamples = 1
-# numbatches = 5
 def kl_loss_func(z_mean, z_log_var):
     return -0.5 * (1 + z_log_var - tf.square(z_mean) - tf.exp(z_log_var))
 for i in tqdm(range(numbatches)):
@@ -254,18 +258,27 @@ for i in tqdm(range(numbatches)):
         [np.mean(
             kl_loss_func(
                 *vae([x,np.ones(len(x))*logbeta], training=False)[1:3]), 
-            axis=0) for logbeta in logbetas]) / numbatches
+            axis=0) for logbeta in logbetas])
+individule_kl_loss /= numbatches
 
 
 for kl_loss in individule_kl_loss.T:
     plt.plot(np.power(10,logbetas), kl_loss)
 plt.semilogx()
-plt.savefig(os.path.join(model_dir, "latent space kl loss.png"))
+plt.savefig(os.path.join(image_dir, "latent space kl loss.png"))
 plt.show()
 
 
 # In[ ]:
 
+
+# np.savez("result_non_anneal.npz",
+#          logbetas = logbetas, 
+#          result_K=result_K, 
+#          result_D=result_D, 
+#          recon_loss=recon_loss, 
+#          kl_loss= kl_loss,
+#         individule_kl_loss=individule_kl_loss)
 
 np.savez("result_non_anneal.npz",
          logbetas = logbetas, 
