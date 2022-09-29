@@ -23,7 +23,7 @@ import os
 
 # configs
 train, val, test = 0.6, 0.3, 0.1
-Phi_sizes, F_sizes = (256, 256, 256), (256, 256, 256)
+Phi_sizes, F_sizes = (128, 128, 128), (128, 128, 128)
 num_epoch = 200
 batch_size = 1000
 muon_feature_number = 6
@@ -93,7 +93,7 @@ def prepare_data(signal_1, signal_2):
 
 
 
-def train_pfn(signal_1, signal_2):
+def train_pfn(signal_1, signal_2, verbose = 0):
     (X,y), (X_train, X_val, X_test,
      Y_train, Y_val, Y_test), class_weight = prepare_data(signal_1, signal_2)
     print('Model summary:')
@@ -104,11 +104,11 @@ def train_pfn(signal_1, signal_2):
     # now train the model
 
     reduce_lr = tf.keras.callbacks.ReduceLROnPlateau(monitor='val_loss', 
-                                factor=0.1**(1/5), patience=5, min_lr=1e-5,
-                                                    verbose=1)
+                                factor=0.1**(1/4), patience=5, min_lr=1e-5,
+                                                    verbose=verbose)
 
-    early_stop = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=10, 
-                                                verbose=1)
+    early_stop = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=15, 
+                                                verbose=verbose)
 
     callbacks = [reduce_lr,early_stop]
 
@@ -118,7 +118,7 @@ def train_pfn(signal_1, signal_2):
             validation_data=(X_val, Y_val),
             class_weight=class_weight,
             callbacks=callbacks,
-            verbose=2)
+            verbose=verbose)
     
     return pfn, hist1, [(X,y), (X_train, X_val, X_test,
      Y_train, Y_val, Y_test), class_weight]
@@ -220,7 +220,7 @@ def prepare_data_muon(signal_1, signal_2, signal_1_muon, signal_2_muon):
     return (X,y), (X_train, X_val, X_test,Y_train, Y_val, Y_test), class_weight
 
 
-def train_pfn_with_muon(signal_1, signal_2, signal_1_muon, signal_2_muon):
+def train_pfn_with_muon(signal_1, signal_2, signal_1_muon, signal_2_muon, verbose=0):
     (X,y), (X_train, X_val, X_test,
      Y_train, Y_val, Y_test), class_weight = prepare_data_muon(signal_1, signal_2, signal_1_muon, signal_2_muon)
     print('Model summary:')
@@ -231,11 +231,11 @@ def train_pfn_with_muon(signal_1, signal_2, signal_1_muon, signal_2_muon):
     # now train the model
 
     reduce_lr = tf.keras.callbacks.ReduceLROnPlateau(monitor='val_loss', 
-                                factor=0.1**(1/5), patience=5, min_lr=1e-5,
-                                                    verbose=1)
+                                factor=0.1**(1/4), patience=5, min_lr=1e-5,
+                                                    verbose=verbose)
 
-    early_stop = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=10, 
-                                                verbose=1)
+    early_stop = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=15, 
+                                                verbose=verbose)
 
     callbacks = [reduce_lr,early_stop]
 
@@ -245,7 +245,7 @@ def train_pfn_with_muon(signal_1, signal_2, signal_1_muon, signal_2_muon):
             validation_data=(X_val, Y_val),
             class_weight=class_weight,
             callbacks=callbacks,
-            verbose=2)
+            verbose=verbose)
     
     return pfn, hist1, [(X,y), (X_train, X_val, X_test,
      Y_train, Y_val, Y_test), class_weight]
