@@ -99,7 +99,7 @@ def train_pfn(signal_1, signal_2, verbose = 0):
     print('Model summary:')
 
     # build architecture
-    pfn = PFN(input_dim=X.shape[-1], Phi_sizes=Phi_sizes, F_sizes=F_sizes)
+    pfn = PFN(input_dim=X.shape[-1], Phi_sizes=Phi_sizes, F_sizes=F_sizes, metrics=[tf.keras.metrics.AUC()])
 
     # now train the model
 
@@ -107,7 +107,7 @@ def train_pfn(signal_1, signal_2, verbose = 0):
                                 factor=0.1**(1/4), patience=5, min_lr=1e-5,
                                                     verbose=verbose)
 
-    early_stop = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=15, 
+    early_stop = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=10, 
                                                 verbose=verbose)
 
     callbacks = [reduce_lr,early_stop]
@@ -226,7 +226,7 @@ def train_pfn_with_muon(signal_1, signal_2, signal_1_muon, signal_2_muon, verbos
     print('Model summary:')
 
     # build architecture
-    pfn = PFN(input_dim=X.shape[-1], Phi_sizes=Phi_sizes, F_sizes=F_sizes, num_global_features = muon_feature_number)
+    pfn = PFN(input_dim=X.shape[-1], Phi_sizes=Phi_sizes, F_sizes=F_sizes, num_global_features = muon_feature_number, metrics=[tf.keras.metrics.AUC()])
 
     # now train the model
 
@@ -234,7 +234,7 @@ def train_pfn_with_muon(signal_1, signal_2, signal_1_muon, signal_2_muon, verbos
                                 factor=0.1**(1/4), patience=5, min_lr=1e-5,
                                                     verbose=verbose)
 
-    early_stop = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=15, 
+    early_stop = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=10, 
                                                 verbose=verbose)
 
     callbacks = [reduce_lr,early_stop]
