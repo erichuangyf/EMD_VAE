@@ -4,3 +4,5 @@ publication_plots/Figure2/.DS_Store
 publication_plots/Figure1/.DS_Store
 publication_plots/.DS_Store
 .DS_Store
+.vscode
+.ipynb_checkpoints
